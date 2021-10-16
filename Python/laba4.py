@@ -1,28 +1,55 @@
 import cv2
+import numpy as np
 
 
-def color_of_central_pixel():
-    cap = cv2.VideoCapture(0)
-    for i in range(30):
-        cap.read()
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        hcv_img = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-        height, width = hcv_img.shape[:2]
-        color = hcv_img[int(height / 2), int(width / 2)]
-
-        cv2.line(hcv_img, (int(width / 2), 0), (int(width / 2), height), (int(color[0]), int(color[1]), int(color[2])))
-        cv2.line(hcv_img, (0, int(height/2)), (width, int(height/2)), (int(color[0]), int(color[1]), int(color[2])))
-
-        cv2.imshow("frame1", hcv_img)
-
-        if cv2.waitKey(40) == 27:
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
+def createPath( img ):
+    h, w = img.shape[:2]
+    return np.zeros((h, w, 3), np.uint8)
 
 
-color_of_central_pixel()
+cv2.namedWindow("result")
+
+cap = cv2.VideoCapture(0)
+hsv_min = np.array((103, 189, 100), np.uint8)
+hsv_max = np.array((110, 229, 120), np.uint8)
+
+lastx = 0
+lasty = 0
+x = 0
+y = 0
+path_color = (0, 0, 255)
+
+flag, img = cap.read()
+path = createPath(img)
+
+while True:
+    flag, img = cap.read()
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV )
+    thresh = cv2.inRange(hsv, hsv_min, hsv_max)
+
+    moments = cv2.moments(thresh, 1)
+    dM01 = moments['m01']
+    dM10 = moments['m10']
+    dArea = moments['m00']
+
+    if dArea > 100:
+        x = int(dM10 / dArea)
+        y = int(dM01 / dArea)
+        cv2.circle(img, (x, y), 10, (0, 0, 255), 1)
+
+    if lastx > 0 and lasty > 0:
+        cv2.line(path, (lastx, lasty), (x, y), path_color, 5)
+    lastx = x
+    lasty = y
+
+    # накладываем линию траектории поверх изображения
+    img = cv2.add(img, path)
+
+    cv2.imshow('result', img)
+
+    ch = cv2.waitKey(5)
+    if ch == 27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
