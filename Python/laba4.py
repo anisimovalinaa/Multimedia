@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def createPath( img ):
+def createPath(img):
     h, w = img.shape[:2]
     return np.zeros((h, w, 3), np.uint8)
 

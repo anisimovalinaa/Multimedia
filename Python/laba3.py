@@ -1,5 +1,11 @@
 import cv2
 
+red_min = [0, 69, 100]
+red_max = [0, 100, 69]
+
+green_min = [120]
+
+blue_min = [240]
 
 def color_of_central_pixel():
     cap = cv2.VideoCapture(0)
@@ -12,6 +18,13 @@ def color_of_central_pixel():
 
         height, width = hcv_img.shape[:2]
         color = hcv_img[int(height / 2), int(width / 2)]
+        # if color[0] < 60:
+        #     print("Красный")
+        # elif color[0] < 120:
+        #     print("Зеленый")
+        # else:
+        #     print("Синий")
+        #
         print(color)
 
         cv2.line(hcv_img, (int(width / 2), 0), (int(width / 2), height), (int(color[0]), int(color[1]), int(color[2])))
